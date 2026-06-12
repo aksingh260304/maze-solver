@@ -2,9 +2,11 @@ import heapq
 import matplotlib.pyplot as plt
 import numpy as np
 
+
 # Heuristic Function (Manhattan Distance)
 def heuristic(a, b):
     return abs(a[0] - b[0]) + abs(a[1] - b[1])
+
 
 # A* Search Algorithm
 def a_star(maze, start, goal):
@@ -26,12 +28,15 @@ def a_star(maze, start, goal):
 
         if current == goal:
             path = []
+
             while current in came_from:
                 path.append(current)
                 current = came_from[current]
 
             path.append(start)
-            return path[::-1], visited
+            path.reverse()
+
+            return path, visited
 
         x, y = current
 
@@ -43,14 +48,23 @@ def a_star(maze, start, goal):
         ]
 
         for nx, ny in neighbors:
-            if 0 <= nx < rows and 0 <= ny < cols and maze[nx][ny] == 0:
+
+            if (0 <= nx < rows and
+                0 <= ny < cols and
+                maze[nx][ny] == 0):
 
                 tentative_g = g_score[current] + 1
 
-                if (nx, ny) not in g_score or tentative_g < g_score[(nx, ny)]:
+                if ((nx, ny) not in g_score or
+                        tentative_g < g_score[(nx, ny)]):
+
                     came_from[(nx, ny)] = current
                     g_score[(nx, ny)] = tentative_g
-                    f_score[(nx, ny)] = tentative_g + heuristic((nx, ny), goal)
+
+                    f_score[(nx, ny)] = (
+                        tentative_g +
+                        heuristic((nx, ny), goal)
+                    )
 
                     heapq.heappush(
                         open_set,
@@ -62,13 +76,11 @@ def a_star(maze, start, goal):
 
 # Console Visualization
 def print_maze(maze, path, visited, start, goal):
-    rows = len(maze)
-    cols = len(maze[0])
 
     print("\nMaze Visualization:\n")
 
-    for i in range(rows):
-        for j in range(cols):
+    for i in range(len(maze)):
+        for j in range(len(maze[0])):
 
             if (i, j) == start:
                 print("S", end=" ")
@@ -91,8 +103,9 @@ def print_maze(maze, path, visited, start, goal):
         print()
 
 
-# Plot Visualization
+# Graphical Visualization
 def plot_maze(maze, path, start, goal):
+
     grid = np.array(maze)
 
     plt.figure(figsize=(6, 6))
@@ -101,10 +114,30 @@ def plot_maze(maze, path, start, goal):
     if path:
         x = [p[1] for p in path]
         y = [p[0] for p in path]
-        plt.plot(x, y, marker='o', linewidth=2, label="Path")
 
-    plt.scatter(start[1], start[0], marker='s', s=150, label="Start")
-    plt.scatter(goal[1], goal[0], marker='*', s=200, label="Goal")
+        plt.plot(
+            x,
+            y,
+            marker='o',
+            linewidth=2,
+            label="Shortest Path"
+        )
+
+    plt.scatter(
+        start[1],
+        start[0],
+        marker='s',
+        s=150,
+        label="Start"
+    )
+
+    plt.scatter(
+        goal[1],
+        goal[0],
+        marker='*',
+        s=200,
+        label="Goal"
+    )
 
     plt.title("Maze Solver using A* Search")
     plt.legend()
@@ -114,27 +147,62 @@ def plot_maze(maze, path, start, goal):
 
 # ---------------- MAIN PROGRAM ----------------
 
-maze = [
-    [0, 0, 0, 1, 0],
-    [1, 1, 0, 1, 0],
-    [0, 0, 0, 0, 0],
-    [0, 1, 1, 1, 0],
-    [0, 0, 0, 0, 0]
-]
+print("===== Maze Solver using A* Search =====")
 
-start = (0, 0)
-goal = (4, 4)
+rows = int(input("Enter number of rows: "))
+cols = int(input("Enter number of columns: "))
+
+print("\nEnter maze row by row")
+print("0 = Path")
+print("1 = Wall\n")
+
+maze = []
+
+for i in range(rows):
+    row = list(map(int, input(f"Row {i+1}: ").split()))
+
+    while len(row) != cols:
+        print("Invalid row length! Enter again.")
+        row = list(map(int, input(f"Row {i+1}: ").split()))
+
+    maze.append(row)
+
+print("\nEnter Start Position")
+start_row = int(input("Start Row: "))
+start_col = int(input("Start Column: "))
+
+print("\nEnter Goal Position")
+goal_row = int(input("Goal Row: "))
+goal_col = int(input("Goal Column: "))
+
+start = (start_row, start_col)
+goal = (goal_row, goal_col)
 
 path, visited = a_star(maze, start, goal)
 
 if path:
-    print("Shortest Path Found!\n")
-    print("Path:")
-    print(path)
 
-    print_maze(maze, path, visited, start, goal)
+    print("\nShortest Path Found!\n")
+    print("Path Coordinates:")
 
-    plot_maze(maze, path, start, goal)
+    for node in path:
+        print(node)
+
+    print_maze(
+        maze,
+        path,
+        visited,
+        start,
+        goal
+    )
+
+    plot_maze(
+        maze,
+        path,
+        start,
+        goal
+    )
 
 else:
-    print("Goal is unreachable!")
+
+    print("\nGoal is unreachable!")
